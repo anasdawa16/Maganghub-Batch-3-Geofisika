@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="id" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MagangHub Kemnaker - Dashboard Lowongan & Filter Jurusan</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: { 50:'#eff6ff',100:'#dbeafe',200:'#bfdbfe',300:'#93c5fd',400:'#60a5fa',500:'#3b82f6',600:'#2563eb',700:'#1d4ed8',800:'#1e40af',900:'#1e3a8a' },
+            accent:  { 50:'#f0fdf4',100:'#dcfce7',200:'#bbf7d0',300:'#86efac',400:'#4ade80',500:'#22c55e',600:'#16a34a',700:'#15803d' },
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    * { font-family: 'Inter', sans-serif; }
+    .glass { background: rgba(255,255,255,0.85); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); }
+    .card-hover { transition: all 0.25s cubic-bezier(0.4,0,0.2,1); }
+    .card-hover:hover { transform: translateY(-4px); box-shadow: 0 16px 36px rgba(0,0,0,0.08); }
+    .tag { display: inline-block; padding: 2px 9px; border-radius: 9999px; font-size: 0.7rem; font-weight: 500; margin: 2px; }
+    .chip { transition: all 0.2s; cursor: pointer; user-select: none; }
+    .chip:hover { transform: scale(1.03); }
+    .chip.active { background: #2563eb; color: white; border-color: #2563eb; box-shadow: 0 4px 12px rgba(37,99,235,0.25); }
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+  </style>
+</head>
+<body class="bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 min-h-screen text-slate-800">
+
+  <!-- Header -->
+  <header class="sticky top-0 z-50 glass border-b border-white/40">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3.5">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 bg-gradient-to-br from-blue-600 to-indigo-700 rounded-xl flex items-center justify-center shadow-md text-white font-bold text-lg">
+            🎓
+          </div>
+          <div>
+            <h1 class="text-lg font-bold text-slate-900 leading-tight">
+              MagangHub <span class="text-primary-600">Kemnaker RI</span>
+            </h1>
+            <p class="text-xs text-slate-500">
+              Data Resmi dari <a href="https://maganghub.kemnaker.go.id" target="_blank" class="text-primary-600 hover:underline font-medium">maganghub.kemnaker.go.id</a>
+            </p>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <span id="lastUpdatedBadge" class="text-[11px] text-slate-500 hidden md:inline">Terakhir update: -</span>
+          <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 shadow-sm">
+            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+            Magang Nasional Batch 3 (Aktif 2026)
+          </span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Stats Bar -->
+  <section class="max-w-7xl mx-auto px-4 sm:px-6 mt-6">
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div class="bg-white rounded-xl p-4 shadow-sm border border-slate-100 flex items-center gap-3">
+        <div class="w-10 h-10 bg-primary-50 rounded-lg flex items-center justify-center text-primary-600 text-lg">
+          📋
+        </div>
+        <div>
+          <p class="text-2xl font-bold text-slate-900" id="statTotal">-</p>
+          <p class="text-xs text-slate-500">Total Lowongan</p>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-xl p-4 shadow-sm border border-slate-100 flex items-center gap-3">
+        <div class="w-10 h-10 bg-emerald-50 rounded-lg flex items-center justify-center text-emerald-600 text-lg">
+          🎯
+        </div>
+        <div>
+          <p class="text-2xl font-bold text-slate-900" id="statFiltered">-</p>
+          <p class="text-xs text-slate-500">Cocok Jurusan Dipilih</p>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-xl p-4 shadow-sm border border-slate-100 flex items-center gap-3">
+        <div class="w-10 h-10 bg-amber-50 rounded-lg flex items-center justify-center text-amber-600 text-lg">
+          🔬
+        </div>
+        <div>
+          <p class="text-2xl font-bold text-slate-900" id="statGeofisika">1 Lowongan</p>
+          <p class="text-xs text-slate-500">Teknik Geofisika</p>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-xl p-4 shadow-sm border border-slate-100 flex items-center gap-3">
+        <div class="w-10 h-10 bg-indigo-50 rounded-lg flex items-center justify-center text-indigo-600 text-lg">
+          ⚡
+        </div>
+        <div>
+          <p class="text-2xl font-bold text-slate-900" id="statSpeed">&lt;5 ms</p>
+          <p class="text-xs text-slate-500">Kecepatan Response</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Filter Section -->
+  <section class="max-w-7xl mx-auto px-4 sm:px-6 mt-6">
+    <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-100">
+      
+      <!-- Keyword Search -->
+      <div class="flex flex-col sm:flex-row gap-3 mb-5">
+        <div class="relative flex-1">
+          <svg class="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+          <input type="text" id="searchKeyword" placeholder="Cari posisi magang, nama perusahaan, atau kota penempatan..." 
+            class="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:bg-white focus:border-primary-500 transition" />
+        </div>
+        <button onclick="applyFilters()" class="px-5 py-2.5 bg-slate-800 text-white text-xs font-semibold rounded-xl hover:bg-slate-900 transition flex items-center justify-center gap-1.5">
+          🔍 Cari
+        </button>
+      </div>
+
+      <!-- Jurusan Filter Controls -->
+      <div>
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
+          <div class="flex items-center gap-2">
+            <h3 class="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
+              <span>🎯</span> Filter by Jurusan yang Dibutuhkan
+            </h3>
+            <span class="text-[11px] text-slate-400">• Multi-select</span>
+          </div>
+
+          <div class="flex items-center gap-3">
+            <input type="text" id="prodiSearchInput" placeholder="Cari nama jurusan..." oninput="filterJurusanChips(this.value)"
+              class="px-2.5 py-1 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:bg-white focus:border-primary-400 w-44" />
+            <button onclick="selectTargetGeos()" class="text-[11px] text-primary-600 hover:underline font-semibold">Rumpun Geofisika</button>
+            <span class="text-slate-300">|</span>
+            <button onclick="clearJurusan()" class="text-[11px] text-slate-500 hover:underline">Hapus Filter</button>
+          </div>
+        </div>
+
+        <!-- Chips -->
+        <div id="jurusanChips" class="flex flex-wrap gap-1.5 max-h-36 overflow-y-auto p-1 bg-slate-50/60 rounded-xl border border-slate-100"></div>
+
+        <div class="mt-3 flex items-center justify-between text-[11px] text-slate-500">
+          <span>💡 <b>Aktif:</b> <span id="activeJurusanCount" class="font-bold text-primary-600">2</span> jurusan dipilih. Termasuk lowongan <b>Teknik Geofisika</b> dan <b>Geofisika</b>.</span>
+          <span class="text-slate-400">Total 500+ jurusan terdaftar</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Lowongan Cards Grid -->
+  <section class="max-w-7xl mx-auto px-4 sm:px-6 mt-6 pb-16">
+    <div class="flex items-center justify-between mb-4">
+      <h2 class="text-base font-bold text-slate-800 flex items-center gap-2">
+        Daftar Lowongan MagangHub
+        <span id="resultCountBadge" class="text-xs font-normal bg-primary-100 text-primary-700 px-2.5 py-0.5 rounded-full font-semibold">0</span>
+      </h2>
+      <div class="flex items-center gap-2 text-xs text-slate-500">
+        <label>Urutkan:</label>
+        <select id="sortSelect" onchange="renderCards()" class="bg-white border border-slate-200 rounded-lg px-2.5 py-1 text-xs focus:outline-none">
+          <option value="relevant">Paling Relevan</option>
+          <option value="quota">Kuota Terbanyak</option>
+          <option value="applicants">Pelamar Tersedikit</option>
+          <option value="company">Nama Perusahaan (A-Z)</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Cards Container -->
+    <div id="cardsContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5"></div>
+
+    <!-- Empty State -->
+    <div id="emptyState" class="hidden text-center py-16 bg-white rounded-2xl border border-slate-100 shadow-sm">
+      <div class="text-4xl mb-3">🔍</div>
+      <h3 class="text-base font-bold text-slate-700 mb-1">Tidak ada lowongan yang cocok</h3>
+      <p class="text-xs text-slate-400 max-w-sm mx-auto mb-4">
+        Coba klik tombol <b>Rumpun Geofisika</b> di atas untuk menyertakan jurusan terkait seperti Geologi, Geodesi, Fisika, atau aktifkan <b>Semua Jurusan</b>.
+      </p>
+      <button onclick="selectTargetGeos()" class="px-4 py-2 bg-primary-600 text-white text-xs font-semibold rounded-lg hover:bg-primary-700 transition">
+        Pilih Rumpun Geofisika & Geosains
+      </button>
+    </div>
+  </section>
+
+  <script>
+    // State
+    let allVacancies = [];
+    let allJurusanList = [];
+    let activeJurusan = new Set([
+      'Teknik Geofisika',
+      'Geofisika'
+    ]);
+
+    // DOM
+    const cardsContainer   = document.getElementById('cardsContainer');
+    const jurusanChips     = document.getElementById('jurusanChips');
+    const emptyState       = document.getElementById('emptyState');
+    const searchKeyword    = document.getElementById('searchKeyword');
+    const sortSelect       = document.getElementById('sortSelect');
+    const resultCountBadge = document.getElementById('resultCountBadge');
+
+    // Init
+    loadData();
+
+    async function loadData() {
+      showSkeletons();
+      const t0 = performance.now();
+
+      try {
+        let res;
+        try {
+          res = await fetch(`./vacancies.json?v=${Date.now()}`);
+          if (!res.ok) throw new Error('Fallback');
+        } catch (errFallback) {
+          res = await fetch('/api/vacancies');
+        }
+
+        const json = await res.json();
+        const ms = (performance.now() - t0).toFixed(0);
+        document.getElementById('statSpeed').textContent = `${ms} ms`;
+
+        allVacancies = json.items || [];
+        allJurusanList = json.jurusanList || [];
+        document.getElementById('statTotal').textContent = allVacancies.length.toLocaleString('id-ID');
+
+        const geoCount = allVacancies.filter(it => 
+          (it.jurusan || []).some(j => /geofisika/i.test(j)) || /geofisika/i.test(it.title)
+        ).length;
+        document.getElementById('statGeofisika').textContent = `${geoCount} Lowongan`;
+
+        if (json.scrapedAt) {
+          const dt = new Date(json.scrapedAt);
+          const formatted = dt.toLocaleString('id-ID', {
+            day: 'numeric', month: 'short', year: 'numeric',
+            hour: '2-digit', minute: '2-digit'
+          });
+          document.getElementById('lastUpdatedBadge').textContent = `🔄 Update: ${formatted} WIB`;
+        }
+
+        renderJurusanChips();
+        renderCards();
+      } catch (err) {
+        console.error('Error:', err);
+        cardsContainer.innerHTML = `<div class="col-span-3 text-center py-12 text-red-500 text-xs">Gagal memuat data dari MagangHub Kemnaker.</div>`;
+      }
+    }
+
+    function renderJurusanChips(filterText = '') {
+      const q = filterText.toLowerCase();
+
+      // Priority list
+      const topPriority = [
+        'Teknik Geofisika', 'Geofisika', 'Teknik Geologi', 'Geologi',
+        'Teknik Geodesi', 'Fisika', 'Teknik Pertambangan', 'Teknik Lingkungan',
+        'Teknik Sipil', 'Teknik Informatika', 'Sistem Informasi', 'Ilmu Komunikasi',
+        'Manajemen', 'Akuntansi', 'Semua Jurusan'
+      ];
+
+      // Merge with all known from dataset
+      const combined = [...new Set([...topPriority, ...allJurusanList])];
+      const filtered = q ? combined.filter(j => j.toLowerCase().includes(q)) : combined.slice(0, 40);
+
+      jurusanChips.innerHTML = filtered.map(name => {
+        const isActive = activeJurusan.has(name);
+        const isGeo = /geofisika|geologi|geodesi|tambang|fisika/i.test(name);
+        return `
+          <button onclick="toggleJurusan('${name.replace(/'/g, "\\'")}')" 
+            class="chip px-2.5 py-1 rounded-full text-[11px] font-medium border transition ${
+              isActive 
+                ? 'bg-primary-600 text-white border-primary-600 shadow-sm' 
+                : isGeo 
+                  ? 'bg-amber-50 text-amber-800 border-amber-200 hover:bg-amber-100'
+                  : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-100'
+            }">
+            ${isActive ? '✓ ' : ''}${name}
+          </button>
+        `;
+      }).join('');
+
+      document.getElementById('activeJurusanCount').textContent = activeJurusan.size;
+    }
+
+    function toggleJurusan(name) {
+      if (activeJurusan.has(name)) {
+        activeJurusan.delete(name);
+      } else {
+        activeJurusan.add(name);
+      }
+      renderJurusanChips(document.getElementById('prodiSearchInput').value);
+      renderCards();
+    }
+
+    function selectTargetGeos() {
+      activeJurusan = new Set([
+        'Teknik Geofisika',
+        'Geofisika',
+        'Teknik Geologi',
+        'Geologi',
+        'Teknik Geodesi',
+        'Teknik Geodesi Dan Geomatika',
+        'Fisika',
+        'Teknik Fisika',
+        'Teknik Pertambangan',
+        'Teknik Survey dan Pemetaan'
+      ]);
+      renderJurusanChips();
+      renderCards();
+    }
+
+    function clearJurusan() {
+      activeJurusan.clear();
+      renderJurusanChips();
+      renderCards();
+    }
+
+    function filterJurusanChips(text) {
+      renderJurusanChips(text);
+    }
+
+    function getFilteredList() {
+      const kw = searchKeyword.value.trim().toLowerCase();
+
+      return allVacancies.filter(it => {
+        // Jurusan filter
+        const itJurusan = it.jurusan || [];
+        const matchJurusan = activeJurusan.size === 0 || itJurusan.some(j => activeJurusan.has(j));
+
+        if (!matchJurusan) return false;
+        if (!kw) return true;
+
+        const pool = [
+          it.title, it.company, it.location, it.description,
+          (it.jurusan || []).join(' ')
+        ].join(' ').toLowerCase();
+
+        return pool.includes(kw);
+      });
+    }
+
+    function renderCards() {
+      const list = getFilteredList();
+
+      // Sort
+      const sortBy = sortSelect.value;
+      if (sortBy === 'quota') {
+        list.sort((a, b) => (b.quota || 0) - (a.quota || 0));
+      } else if (sortBy === 'applicants') {
+        list.sort((a, b) => (a.applicants || 0) - (b.applicants || 0));
+      } else if (sortBy === 'company') {
+        list.sort((a, b) => (a.company || '').localeCompare(b.company || ''));
+      } else if (sortBy === 'relevant') {
+        // prioritize items that match Geofisika
+        list.sort((a, b) => {
+          const aGeo = (a.jurusan || []).some(j => /geofisika/i.test(j)) ? 1 : 0;
+          const bGeo = (b.jurusan || []).some(j => /geofisika/i.test(j)) ? 1 : 0;
+          return bGeo - aGeo;
+        });
+      }
+
+      resultCountBadge.textContent = `${list.length} Lowongan`;
+      document.getElementById('statFiltered').textContent = list.length;
+
+      if (list.length === 0) {
+        cardsContainer.innerHTML = '';
+        emptyState.classList.remove('hidden');
+        return;
+      }
+      emptyState.classList.add('hidden');
+
+      const colors = [
+        'from-blue-600 to-indigo-700',
+        'from-indigo-600 to-violet-700',
+        'from-teal-600 to-emerald-700',
+        'from-sky-600 to-cyan-700',
+        'from-slate-700 to-slate-900',
+      ];
+
+      cardsContainer.innerHTML = list.map((item, idx) => {
+        const bgGrad = colors[idx % colors.length];
+        const isTarget = (item.jurusan || []).some(j => /geofisika/i.test(j));
+
+        const jurusanTags = (item.jurusan || []).map(j => {
+          const isGeoMatch = /geofisika/i.test(j);
+          const isRelated = /geologi|geodesi|tambang|fisika/i.test(j);
+          let cls = 'bg-slate-100 text-slate-700';
+          if (isGeoMatch) cls = 'bg-amber-100 text-amber-900 font-bold ring-1 ring-amber-400';
+          else if (isRelated) cls = 'bg-blue-100 text-blue-800 font-semibold';
+          return `<span class="tag ${cls}">${escapeHtml(j)}</span>`;
+        }).join('');
+
+        return `
+          <div class="card-hover bg-white rounded-2xl shadow-sm border ${isTarget ? 'border-amber-300 ring-2 ring-amber-200' : 'border-slate-100'} overflow-hidden flex flex-col justify-between">
+            <div>
+              <!-- Header Gradient -->
+              <div class="bg-gradient-to-r ${bgGrad} p-4 text-white">
+                <div class="flex items-center justify-between mb-2">
+                  <span class="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded ${isTarget ? 'bg-amber-400 text-amber-950 font-black' : 'bg-white/20 text-white'}">
+                    ${isTarget ? '★ Cocok Geofisika' : escapeHtml(item.jobType)}
+                  </span>
+                  <span class="text-[11px] text-white/90">
+                    👥 Kuota: <b>${item.quota}</b> • Pelamar: <b>${item.applicants}</b>
+                  </span>
+                </div>
+                <h3 class="font-bold text-sm leading-snug line-clamp-2 mb-1" title="${escapeHtml(item.title)}">
+                  ${escapeHtml(item.title)}
+                </h3>
+                <p class="text-xs text-white/85 flex items-center gap-1.5 line-clamp-1">
+                  🏢 ${escapeHtml(item.company)}
+                </p>
+              </div>
+
+              <!-- Body -->
+              <div class="p-4 space-y-3">
+                <div class="flex items-center justify-between text-[11px] text-slate-500">
+                  <span class="flex items-center gap-1 line-clamp-1">
+                    📍 ${escapeHtml(item.location || 'Indonesia')}
+                  </span>
+                  ${item.schedule?.tanggal_batas_pendaftaran ? `
+                  <span class="text-amber-700 bg-amber-50 px-2 py-0.5 rounded text-[10px] font-medium">
+                    Tenggat: ${escapeHtml(item.schedule.tanggal_batas_pendaftaran.slice(0, 10))}
+                  </span>` : ''}
+                </div>
+
+                <!-- Jurusan yang Dibutuhkan -->
+                <div>
+                  <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Jurusan Dibutuhkan</p>
+                  <div class="flex flex-wrap gap-0.5 max-h-24 overflow-y-auto">
+                    ${jurusanTags}
+                  </div>
+                </div>
+
+                <!-- Deskripsi Ringkas -->
+                ${item.description ? `
+                <p class="text-[11px] text-slate-500 line-clamp-2 leading-relaxed">
+                  ${escapeHtml(item.description)}
+                </p>` : ''}
+              </div>
+            </div>
+
+            <!-- Footer Action Link -->
+            <div class="p-4 pt-0">
+              <a href="${escapeHtml(item.applyUrl)}" target="_blank" rel="noopener noreferrer" 
+                class="w-full block text-center py-2 px-3 ${isTarget ? 'bg-amber-500 hover:bg-amber-600 text-white font-bold' : 'bg-primary-50 hover:bg-primary-100 text-primary-700 font-semibold'} text-xs rounded-xl transition shadow-sm">
+                Lihat Detail Resmi di MagangHub →
+              </a>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function applyFilters() {
+      renderCards();
+    }
+
+    searchKeyword.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') applyFilters();
+    });
+
+    function showSkeletons() {
+      cardsContainer.innerHTML = Array(6).fill('').map(() => `
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+          <div class="h-20 bg-slate-200 animate-pulse"></div>
+          <div class="p-4 space-y-3">
+            <div class="h-4 bg-slate-200 rounded w-3/4 animate-pulse"></div>
+            <div class="h-3 bg-slate-200 rounded w-1/2 animate-pulse"></div>
+            <div class="h-6 bg-slate-200 rounded-full w-24 animate-pulse"></div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+  </script>
+</body>
+</html>
