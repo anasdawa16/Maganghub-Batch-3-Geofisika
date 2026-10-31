@@ -119,6 +119,20 @@ async function main() {
   const outPath = path.join(__dirname, 'vacancies.json');
   fs.writeFileSync(outPath, JSON.stringify(payload, null, 2), 'utf8');
 
+  // Sinkronkan juga instant-data ke index.html agar load 0 ms
+  const htmlPath = path.join(__dirname, 'index.html');
+  if (fs.existsSync(htmlPath)) {
+    let htmlContent = fs.readFileSync(htmlPath, 'utf8');
+    const tag = `<script id="initial-data">window.__INITIAL_DATA__ = ${JSON.stringify(payload)};</script>`;
+    if (htmlContent.includes('id="initial-data"')) {
+      htmlContent = htmlContent.replace(/<script id="initial-data">[\s\S]*?<\/script>/, tag);
+    } else {
+      htmlContent = htmlContent.replace('</head>', `  ${tag}\n</head>`);
+    }
+    fs.writeFileSync(htmlPath, htmlContent, 'utf8');
+    console.log('✅ Instant data berhasil disinkronkan ke index.html');
+  }
+
   console.log('\n===========================================');
   console.log(`✅ SCRAPING GEOFISIKA SELESAI!`);
   console.log(`TOTAL LOWONGAN GEOFISIKA & TEKNIK GEOFISIKA: ${items.length}`);

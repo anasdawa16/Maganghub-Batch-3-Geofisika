@@ -1,0 +1,13 @@
+# Netlify configuration for MagangHub Dashboard
+[build]
+  publish = "."
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    Access-Control-Allow-Origin = "*"
+
+[[headers]]
+  for = "/vacancies.json"
+  [headers.values]
+    Cache-Control = "public, max-age=60, s-maxage=300"
