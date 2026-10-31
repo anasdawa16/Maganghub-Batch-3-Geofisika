@@ -1,0 +1,33 @@
+name: Auto Update MagangHub Data (Batch 3)
+
+on:
+  schedule:
+    # Berjalan otomatis setiap 3 jam sekali
+    - cron: '0 */3 * * *'
+  # Bisa ditrigger manual kapan saja lewat tab Actions
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  scrape-and-update:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Run Scraper MagangHub Batch 3
+        run: node scrape_geofisika_only.js
+
+      - name: Commit and Push jika ada pembaruan data
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add vacancies.json index.html
+          git diff --staged --quiet || (git commit -m "chore(data): auto-update vacancies & applicants data [skip ci]" && git push)
